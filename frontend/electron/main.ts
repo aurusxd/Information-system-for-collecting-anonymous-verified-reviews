@@ -2,6 +2,7 @@ import { app, BrowserWindow } from 'electron'
 import { createRequire } from 'node:module'
 import { fileURLToPath } from 'node:url'
 import path from 'node:path'
+import { windowWidth, windowHeight, windowMinHeight, windowMinWidth } from "../config/config.ts";
 
 const require = createRequire(import.meta.url)
 const __dirname = path.dirname(fileURLToPath(import.meta.url))
@@ -28,10 +29,10 @@ let win: BrowserWindow | null
 
 function createWindow() {  
   win = new BrowserWindow({
-    width: 1200,      // Стартовая ширина окна
-    height: 800,      // Стартовая высота окна
-    minWidth: 1000,   // МИНИМАЛЬНАЯ ширина (меньше этого значения окно нельзя будет сжать)
-    minHeight: 650,   // МИНИМАЛЬНАЯ высота
+    width: windowWidth,      // Стартовая ширина окна
+    height: windowHeight,      // Стартовая высота окна
+    minWidth: windowMinWidth,   // МИНИМАЛЬНАЯ ширина (меньше этого значения окно нельзя будет сжать)
+    minHeight: windowMinHeight,   // МИНИМАЛЬНАЯ высота
     icon: path.join(process.env.VITE_PUBLIC, 'electron-vite.svg'),
     webPreferences: {
       preload: path.join(__dirname, 'preload.mjs'),

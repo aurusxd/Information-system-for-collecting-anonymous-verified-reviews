@@ -10,7 +10,7 @@ import src.db.database as database
 importlib.reload(database)
 database.init_db()
 
-from src.main import app
+from src.main import app  # noqa: E402
 
 client = TestClient(app)
 
