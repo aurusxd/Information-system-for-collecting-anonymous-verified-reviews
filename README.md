@@ -133,6 +133,11 @@ cd Information-system-for-collecting-anonymous-verified-reviews
 ```
 Пример содержимого:
 ```env
+DB_HOST=localhost   
+DB_PORT=6432
+DB_NAME=my_db
+DB_USER=usr
+DB_PASSWORD=123
 TELEGRAM_BOT_TOKEN=your_token
 API_BASE_URL=http://localhost:8000
 ```
