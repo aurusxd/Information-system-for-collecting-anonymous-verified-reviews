@@ -8,6 +8,7 @@ dependencies = [
     "aiogram>=3.28.2",
     "fastapi>=0.136.3",
     "httpx>=0.28.1",
+    "loguru>=0.7.3",
     "psycopg2-binary>=2.9.12",
     "pytest>=9.0.3",
     "sqlalchemy>=2.0.50",
