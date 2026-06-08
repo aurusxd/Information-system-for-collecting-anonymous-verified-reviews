@@ -12,6 +12,7 @@ paths:
   /box:
     post:
       summary: Create a new feedback box
+      description: Returns box UUID and owner token. Save the token -it's shown only once
       responses:
         '200':
           description: Box created
@@ -28,6 +29,7 @@ paths:
   /box/{uuid}/feedback:
     post:
       summary: Send anonymous feedback
+      description: Max 500 characters. Rate limited per IP
       parameters:
         - name: uuid
           in: path
@@ -67,6 +69,7 @@ paths:
   /box/{uuid}/feedbacks:
     get:
       summary: Get feedbacks (owner only)
+      description: Requires Bearer token. Supports pagination
       security:
         - bearerAuth: []
       parameters:
@@ -111,14 +114,17 @@ paths:
                         created_at:
                           type: string
                           format: date-time
+        '401':
+          description: Missing or invalid token
         '403':
-          description: Forbidden
+          description: Not the owner of this box
         '404':
           description: Box not found
 
   /feedback/{id}/reply:
     post:
       summary: Reply to feedback (owner only)
+      description: Requires owner token. One reply per feedback
       security:
         - bearerAuth: []
       parameters:
@@ -149,8 +155,12 @@ paths:
                   status:
                     type: string
                     example: ok
+        '400':
+          description: Invalid input
+        '401':
+          description: Missing or invalid token
         '403':
-          description: Forbidden
+          description: Not the owner of this feedback's box
         '404':
           description: Feedback not found
 
