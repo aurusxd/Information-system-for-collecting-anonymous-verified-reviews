@@ -1,6 +1,16 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
+from log import setup_logger
 import os
+
+logger = setup_logger(
+    log_dir="logs",
+    log_file="my_app.log",
+    max_size="10 MB",  
+    retention=5,       
+    console_level="DEBUG",
+    file_level="INFO"
+)
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
@@ -13,6 +23,7 @@ if DATABASE_URL is None:
     if not all([db_user, db_password, db_name]):
         raise RuntimeError(
             "PostgreSQL configuration is required. Set DATABASE_URL or DB_USER, DB_PASSWORD, DB_NAME."
+            logger.exception("DB error")
         )
 
     DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
