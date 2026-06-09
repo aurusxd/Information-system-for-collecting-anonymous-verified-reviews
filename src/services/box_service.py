@@ -1,6 +1,7 @@
 from src.models.box import Box
 from src.utils.security import generate_uuid, generate_token
 from sqlalchemy.orm import Session
+from log import log
 
 def create_box(db: Session, user_id: int | None = None) -> Box:
     box = Box(
@@ -11,4 +12,5 @@ def create_box(db: Session, user_id: int | None = None) -> Box:
     db.add(box)
     db.commit()
     db.refresh(box)
+    log.info("Box created")
     return box

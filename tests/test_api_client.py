@@ -4,6 +4,7 @@ import httpx
 import pytest
 
 from bot.api_client import ApiClient, ApiError
+from log import log
 
 
 def test_api_client_retries_on_transient_http_errors():
@@ -27,6 +28,7 @@ def test_api_client_retries_on_transient_http_errors():
 
 def test_api_client_maps_connect_error_to_api_error():
     async def handler(request: httpx.Request) -> httpx.Response:
+        log.error("Connection failed")
         raise httpx.RequestError("Connection failed", request=request)
 
     transport = httpx.MockTransport(handler)
@@ -44,6 +46,7 @@ def test_api_client_retries_until_timeout_error():
 
     async def handler(request: httpx.Request) -> httpx.Response:
         calls.append(request)
+        log.error("Gateway timeout")
         return httpx.Response(504, json={"detail": "Gateway timeout"})
 
     transport = httpx.MockTransport(handler)

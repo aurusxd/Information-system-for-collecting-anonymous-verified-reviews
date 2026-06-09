@@ -7,6 +7,7 @@ from src.services.user_service import create_user, authenticate_user, get_user_b
 from src.models.user import User
 from src.models.box import Box
 from src.models.feedback import Feedback
+from log import log
 
 router = APIRouter(prefix="/auth", tags=["auth"])
 
@@ -14,9 +15,11 @@ router = APIRouter(prefix="/auth", tags=["auth"])
 @router.post("/register", response_model=AuthResponse, status_code=status.HTTP_201_CREATED)
 def register(data: RegisterRequest, db: Session = Depends(get_db)):
     if data.password != data.confirm_password:
+        log.error("Passwords do not match")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Passwords do not match")
 
     if get_user_by_username(db, data.username) is not None:
+        log.error("Username already exists")
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Username already exists")
 
     user = create_user(db, data.username, data.password)
@@ -27,6 +30,7 @@ def register(data: RegisterRequest, db: Session = Depends(get_db)):
 def login(data: LoginRequest, db: Session = Depends(get_db)):
     user = authenticate_user(db, data.username, data.password)
     if user is None:
+        log.error("Invalid username or password")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid username or password")
     return AuthResponse(username=user.username, token=user.auth_token)
 
@@ -39,12 +43,14 @@ def me(authorization: str = Header(None, alias="Authorization"), db: Session = D
 
 def _get_user_or_401(authorization: str | None, db: Session) -> User:
     if not authorization:
+        log.error("Authorization header missing")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Authorization header missing")
     token = authorization
     if token.lower().startswith("bearer "):
         token = token[7:].strip()
     user = get_user_by_token(db, token)
     if user is None:
+        log.error("Invalid token")
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid token")
     return user
 
@@ -74,15 +80,20 @@ def my_feedbacks(authorization: str = Header(None, alias="Authorization"), db: S
         if not box:
             continue
         replies = [BoxReplyOut(id=reply.id, text=reply.text, created_at=reply.created_at.isoformat()) for reply in fb.replies]
-        feedbacks.append(
-            FeedbackShortOut(
-                id=fb.id,
-                box_uuid=box.uuid,
-                text=fb.text,
-                status=fb.status,
-                moderation_notes=fb.moderation_notes,
-                created_at=fb.created_at.isoformat(),
-                replies=replies,
+        try:
+            feedbacks.append(
+                FeedbackShortOut(
+                    id=fb.id,
+                    box_uuid=box.uuid,
+                    text=fb.text,
+                    status=fb.status,
+                    moderation_notes=fb.moderation_notes,
+                    created_at=fb.created_at.isoformat(),
+                    replies=replies,
+                )
             )
-        )
+        except Exception as e:
+            log.error(f"Feedback create error: {e}")
+            
+
     return UserFeedbacksResponse(feedbacks=feedbacks)

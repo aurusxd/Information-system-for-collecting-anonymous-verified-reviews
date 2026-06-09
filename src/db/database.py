@@ -1,16 +1,10 @@
 from sqlalchemy import create_engine
 from sqlalchemy.orm import sessionmaker, declarative_base
-from log import setup_logger
+from log import log
+
 import os
 
-logger = setup_logger(
-    log_dir="logs",
-    log_file="my_app.log",
-    max_size="10 MB",  
-    retention=5,       
-    console_level="DEBUG",
-    file_level="INFO"
-)
+
 
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL is None:
@@ -21,15 +15,12 @@ if DATABASE_URL is None:
     db_port = os.getenv("DB_PORT", "5432")
 
     if not all([db_user, db_password, db_name]):
-        raise RuntimeError(
-            "PostgreSQL configuration is required. Set DATABASE_URL or DB_USER, DB_PASSWORD, DB_NAME."
-            logger.exception("DB error")
-        )
+        log.exception("PostgreSQL configuration is required. Set DATABASE_URL or DB_USER, DB_PASSWORD, DB_NAME.")
 
     DATABASE_URL = f"postgresql://{db_user}:{db_password}@{db_host}:{db_port}/{db_name}"
 
 if not DATABASE_URL.startswith("postgresql"):
-    raise RuntimeError("DATABASE_URL must use PostgreSQL: postgresql://...")
+    log.critical("DATABASE_URL must use PostgreSQL: postgresql://...")
 
 engine = create_engine(DATABASE_URL)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
@@ -44,4 +35,10 @@ def get_db():
 
 
 def init_db():
-    Base.metadata.create_all(bind=engine)
+    try:
+        log.info("Создание таблиц")
+        Base.metadata.create_all(bind=engine)
+        log.info("Таблицы успешно созданы")
+    except Exception as e:
+        log.error(f"Ошибка создания таблиц: {e}")
+        raise

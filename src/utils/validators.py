@@ -1,5 +1,6 @@
 import re
 from html import unescape
+from log import log
 
 BAD_WORDS = ["badword", "spam", "viagra", "casino", "click here"]
 SPAM_PATTERNS = [r"free money", r"click here", r"visit .*\.com", r"buy now"]
@@ -20,13 +21,16 @@ def moderate_text(text: str) -> str:
 
     lowered = text.lower()
     if any(word in lowered for word in BAD_WORDS):
-        raise ValueError("Bad word detected")
+        log.error("Bad word detected")
+        raise
 
     spam_hits = sum(bool(re.search(pattern, lowered)) for pattern in SPAM_PATTERNS)
     if spam_hits > 1:
-        raise ValueError("Spam-like content")
+        log.error("Spam-like content")
+        raise
 
     if len(re.findall(r"[!?.]", text)) > 10 and len(text) < 40:
-        raise ValueError("Spam-like content")
+        log.error("Spam-like content")
+        raise
 
     return text

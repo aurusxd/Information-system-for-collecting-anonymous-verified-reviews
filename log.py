@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 from loguru import logger
-from datetime import datetime
 
 
 
@@ -110,6 +109,14 @@ def get_logger():
     return _logger_instance
 
 
+log = setup_logger(
+    log_dir="logs",
+    log_file="app.log",
+    max_size="10 MB",  
+    retention=5,       
+    console_level="DEBUG",
 
+    file_level="INFO"
+)
 
 

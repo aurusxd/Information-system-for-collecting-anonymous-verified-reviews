@@ -1,11 +1,10 @@
 import asyncio
-import logging
 import random
 import httpx
 from dataclasses import dataclass
 from typing import Any, Optional
+from log import log
 
-logger = logging.getLogger(__name__)
 
 @dataclass
 class ApiError(Exception):
@@ -49,7 +48,7 @@ class ApiClient:
 
                 if resp.status_code in {503, 504} and attempt < self._max_retries:
                     delay = self._backoff_factor * (2 ** attempt) + random.uniform(0, 0.1)
-                    logger.warning(
+                    log.warning(
                         "Temporary API error %s for %s %s, retrying after %.2fs",
                         resp.status_code,
                         method,
@@ -72,25 +71,25 @@ class ApiClient:
             except httpx.TimeoutException as exc:
                 if attempt < self._max_retries:
                     delay = self._backoff_factor * (2 ** attempt) + random.uniform(0, 0.1)
-                    logger.warning("Timeout on API request %s %s, retrying after %.2fs", method, path, delay)
+                    log.warning("Timeout on API request %s %s, retrying after %.2fs", method, path, delay)
                     attempt += 1
                     await asyncio.sleep(delay)
                     continue
-                logger.error("API request timeout: %s", exc)
+                log.error("API request timeout: %s", exc)
                 raise ApiError(status_code=504, detail="API request timeout")
             except httpx.RequestError as exc:
                 if attempt < self._max_retries:
                     delay = self._backoff_factor * (2 ** attempt) + random.uniform(0, 0.1)
-                    logger.warning("Network error on API request %s %s, retrying after %.2fs: %s", method, path, delay, exc)
+                    log.warning("Network error on API request %s %s, retrying after %.2fs: %s", method, path, delay, exc)
                     attempt += 1
                     await asyncio.sleep(delay)
                     continue
-                logger.error("API connection error: %s", exc)
+                log.error("API connection error: %s", exc)
                 raise ApiError(status_code=503, detail="API service unavailable")
             except ApiError:
                 raise
             except Exception as exc:
-                logger.error("Unexpected API error: %s", exc)
+                log.error("Unexpected API error: %s", exc)
                 raise ApiError(status_code=500, detail="Unexpected error")
 
     async def create_box(self) -> dict[str, Any]:

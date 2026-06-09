@@ -1,6 +1,7 @@
 from sqlalchemy.orm import Session
 from src.models.user import User
 from src.utils.security import hash_password, generate_auth_token, verify_password
+from log import log
 
 
 def get_user_by_username(db: Session, username: str) -> User | None:
@@ -18,6 +19,7 @@ def create_user(db: Session, username: str, password: str) -> User:
     db.add(user)
     db.commit()
     db.refresh(user)
+    log.info("User created")
     return user
 
 
@@ -31,4 +33,5 @@ def authenticate_user(db: Session, username: str, password: str) -> User | None:
         user.auth_token = generate_auth_token()
         db.commit()
         db.refresh(user)
+    log.info(f"User: {user} authenticate")
     return user

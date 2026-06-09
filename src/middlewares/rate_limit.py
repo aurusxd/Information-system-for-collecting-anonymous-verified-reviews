@@ -1,7 +1,7 @@
 from time import time
 from fastapi import HTTPException, status
 from src.core.config import checkRate_MAX_REQUESTS,checkRate_WINDOW_SECONDS
-
+from log import log
 requests = {}
 
 
@@ -18,6 +18,7 @@ def check_rate(ip: str, route: str):
     requests[key] = history
 
     if len(history) > checkRate_MAX_REQUESTS:
+        log.exception("Too many requests, please wait a minute")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many requests, please wait a minute"

@@ -1,6 +1,8 @@
 from src.models.reply import Reply
 from src.utils.validators import moderate_text
 from fastapi import HTTPException, status
+from log import log
+
 
 def create_reply(db, feedback_id, text):
     try:
@@ -12,4 +14,5 @@ def create_reply(db, feedback_id, text):
     db.add(reply)
     db.commit()
     db.refresh(reply)
+    log.info("Reply created")
     return reply

@@ -1,6 +1,7 @@
 from src.models.feedback import Feedback
 from src.utils.validators import moderate_text
 from fastapi import HTTPException, status
+from log import log
 
 def create_feedback(db, box_id, text):
     try:
@@ -12,4 +13,5 @@ def create_feedback(db, box_id, text):
     db.add(fb)
     db.commit()
     db.refresh(fb)
+    log.info("Feedback created")
     return fb

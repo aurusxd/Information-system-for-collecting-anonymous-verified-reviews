@@ -1,6 +1,7 @@
-from fastapi import HTTPException, status
-
+from fastapi import status
+from log import log
 
 def validate_owner_token(token: str, box):
     if not token or token != box.owner_token:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Invalid owner token")
+        log.exception(f"Invalid owner token {status.HTTP_403_FORBIDDEN}")
+        raise

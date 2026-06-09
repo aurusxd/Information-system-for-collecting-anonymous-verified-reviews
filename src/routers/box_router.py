@@ -5,6 +5,7 @@ from src.middlewares.rate_limit import check_rate
 from src.schemas.box import BoxCreateResponse
 from src.services.box_service import create_box
 from src.services.user_service import get_user_by_token
+from log import log
 
 router = APIRouter()
 
@@ -21,5 +22,6 @@ def create_box_endpoint(request: Request, authorization: str = Header(None, alia
             user_id = user.id
     box = create_box(db, user_id=user_id)
     if not box:
+        log.error("Unable to create box")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to create box")
     return box
