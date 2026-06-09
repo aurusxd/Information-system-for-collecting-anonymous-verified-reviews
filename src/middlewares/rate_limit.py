@@ -18,7 +18,7 @@ def check_rate(ip: str, route: str):
     requests[key] = history
 
     if len(history) > checkRate_MAX_REQUESTS:
-        log.exception("Too many requests, please wait a minute")
+        log.exception(f"Too many requests, please wait a minute: {status.HTTP_429_TOO_MANY_REQUESTS}")
         raise HTTPException(
             status_code=status.HTTP_429_TOO_MANY_REQUESTS,
             detail="Too many requests, please wait a minute"

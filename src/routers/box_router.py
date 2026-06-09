@@ -22,6 +22,6 @@ def create_box_endpoint(request: Request, authorization: str = Header(None, alia
             user_id = user.id
     box = create_box(db, user_id=user_id)
     if not box:
-        log.error("Unable to create box")
+        log.error(f"Unable to create box, status code: {status.HTTP_500_INTERNAL_SERVER_ERROR}")
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Unable to create box")
     return box

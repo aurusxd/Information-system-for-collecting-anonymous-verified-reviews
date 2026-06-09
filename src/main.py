@@ -5,6 +5,7 @@ from src.routers import box_router, feedback_router
 from src.routers.auth_router import router as auth_router
 from src.db.database import init_db
 from fastapi.middleware.cors import CORSMiddleware 
+from log import log
 
 app = FastAPI()
 
@@ -46,6 +47,7 @@ app.openapi = custom_openapi
 
 @app.get("/", response_class=HTMLResponse)
 def root():
+    log.debug("Запрос главной страницы")
     return HTMLResponse(
         """
         <html>
@@ -67,4 +69,5 @@ def root():
 
 @app.get("/health")
 def health():
+    log.info("Health check запрос")
     return {"status": "ok"}
