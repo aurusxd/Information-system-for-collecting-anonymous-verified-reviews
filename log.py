@@ -1,3 +1,4 @@
+import os
 import sys
 from pathlib import Path
 from loguru import logger
@@ -67,23 +68,35 @@ class AppLogger:
             diagnose=True,
         )
 
-    def _setup_file_handler(self) -> None:
-        """Настройка файлового обработчика с ротацией."""
-        self.log_dir.mkdir(parents=True, exist_ok=True)
-
-        log_path = self.log_dir / self.log_file
-
+    def _add_file_sink(self, log_dir: Path) -> None:
+        log_dir.mkdir(parents=True, exist_ok=True)
+        log_path = log_dir / self.log_file
         logger.add(
             str(log_path),
             format=self._get_log_format(),
             level=self.file_level,
-            rotation=self.max_size,      
-            retention=self.retention,   
-            compression="gz",           
+            rotation=self.max_size,
+            retention=self.retention,
+            compression="gz",
             encoding="utf-8",
             backtrace=True,
             diagnose=True,
         )
+
+    def _setup_file_handler(self) -> None:
+        """Настройка файлового обработчика с ротацией."""
+        fallback_dirs = [Path("/tmp/logs")]
+        candidates = [self.log_dir, *(d for d in fallback_dirs if d != self.log_dir)]
+
+        for log_dir in candidates:
+            try:
+                self._add_file_sink(log_dir)
+                self.log_dir = log_dir
+                return
+            except OSError:
+                continue
+
+        logger.warning("File logging disabled: no writable log directory found")
 
     def get_logger(self):
         """Возвращает настроенный экземпляр логгера."""
@@ -110,7 +123,7 @@ def get_logger():
 
 
 log = setup_logger(
-    log_dir="logs",
+    log_dir=os.environ.get("LOG_DIR", "logs"),
     log_file="app.log",
     max_size="10 MB",  
     retention=5,       
