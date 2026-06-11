@@ -2,6 +2,7 @@ services:
   db:
     image: postgres:15
     restart: unless-stopped
+    container_name: dbCont
     environment:
       POSTGRES_DB: ${DB_NAME}
       POSTGRES_USER: ${DB_USER}
@@ -20,6 +21,7 @@ services:
   api:
     build: .
     restart: on-failure
+    container_name: apiCont
     ports:
       - "8000:8000"
     depends_on:
@@ -42,6 +44,7 @@ services:
   bot:
     build: .
     restart: on-failure
+    container_name: botCont
     depends_on:
       api:
         condition: service_healthy
