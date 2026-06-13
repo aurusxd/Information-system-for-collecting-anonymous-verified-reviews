@@ -7,7 +7,7 @@ __pycache__/
 # Ruff stuff:
 .ruff_cache/
 # logs cache
-.logs/
+logs/
 # backups
-.backups/
+backups/
 

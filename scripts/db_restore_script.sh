@@ -1,5 +1,3 @@
-#!/bin/bash
-export PATH="/c/Program Files/PostgreSQL/18/bin:$PATH"
 cd ..
 ENV_FILE=".env"
 if [ -f "$ENV_FILE" ]; then
@@ -14,26 +12,20 @@ if [ -f "$ENV_FILE" ]; then
         export "$key=$value"
     done < "$ENV_FILE"
     echo "Чтение файла $ENV_FILE завершено"
-    if test -d "./backups"; then
-        echo "Папка существует"
-        cd backups
-    else 
-        echo "Папки не существует, создаю"
-        mkdir backups
-        cd backups
-    fi
     
 else
     echo "Файл $ENV_FILE не найден"
 fi
-
-
 
 DB_HOST=$DB_HOST  
 DB_PORT=$DB_PORT
 DB_NAME=$DB_NAME
 DB_USER=$DB_USER
 DB_PASSWORD=$DB_PASSWORD
+echo $DB_USER
+
+timestamp=$(date +"%d-%m-%Y")
+fileName="db_backup_$timestamp"
 
 CONTAINER_NAME=$(docker ps --filter "name=db" --format "{{.Names}}" | grep -E ".*db" | head -n1)
 
@@ -45,8 +37,13 @@ fi
 echo "✅ Найден контейнер: $CONTAINER_NAME"
 echo "📊 Подключение к БД: $DB_NAME пользователь: $DB_USER"
 
-timestamp=$(date +"%d-%m-%Y")
-fileName="db_backup_$timestamp"
-docker exec -t $CONTAINER_NAME pg_dump -U $DB_USER $DB_NAME > "$fileName.sql"
-# pg_dump -U postgres "$DB_NAME" > "$fileName.sql"
-echo "dump created"
+docker exec -t $CONTAINER_NAME dropdb --force -U $DB_USER $DB_NAME
+
+# docker exec -t -u "$DB_USER" "$CONTAINER_NAME" dropdb --if-exists "$DB_NAME"
+
+# docker exec -t -u "$DB_USER" "$CONTAINER_NAME" createdb "$DB_NAME"
+docker exec -t $CONTAINER_NAME createdb -U $DB_USER $DB_NAME
+
+# docker exec -i -u "$DB_USER" "$CONTAINER_NAME" psql "$DB_NAME" < "$fileName.sql"
+docker exec -i $CONTAINER_NAME psql -U $DB_USER "$DB_NAME" < "./backups/$fileName.sql"
+echo "Done"
