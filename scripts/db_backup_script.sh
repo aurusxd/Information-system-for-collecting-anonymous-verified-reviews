@@ -37,12 +37,12 @@ DB_PASSWORD=$DB_PASSWORD
 CONTAINER_NAME=$(docker ps --filter "name=db" --format "{{.Names}}" | grep -E ".*db" | head -n1)
 
 if [ -z "$CONTAINER_NAME" ]; then
-    echo "❌ Контейнер с PostgreSQL не найден. Запустите: docker-compose up -d db"
+    echo "Контейнер с PostgreSQL не найден."
     exit 1
 fi
 
-echo "✅ Найден контейнер: $CONTAINER_NAME"
-echo "📊 Подключение к БД: $DB_NAME пользователь: $DB_USER"
+echo "Найден контейнер: $CONTAINER_NAME"
+echo "Подключение к БД: $DB_NAME пользователь: $DB_USER"
 
 timestamp=$(date +"%d-%m-%Y")
 fileName="db_backup_$timestamp"

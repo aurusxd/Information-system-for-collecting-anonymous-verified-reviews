@@ -30,20 +30,16 @@ fileName="db_backup_$timestamp"
 CONTAINER_NAME=$(docker ps --filter "name=db" --format "{{.Names}}" | grep -E ".*db" | head -n1)
 
 if [ -z "$CONTAINER_NAME" ]; then
-    echo "❌ Контейнер с PostgreSQL не найден. Запустите: docker-compose up -d db"
+    echo "Контейнер с PostgreSQL не найден."
     exit 1
 fi
 
-echo "✅ Найден контейнер: $CONTAINER_NAME"
-echo "📊 Подключение к БД: $DB_NAME пользователь: $DB_USER"
+echo "Найден контейнер: $CONTAINER_NAME"
+echo "Подключение к БД: $DB_NAME пользователь: $DB_USER"
 
 docker exec -t $CONTAINER_NAME dropdb --force -U $DB_USER $DB_NAME
 
-# docker exec -t -u "$DB_USER" "$CONTAINER_NAME" dropdb --if-exists "$DB_NAME"
-
-# docker exec -t -u "$DB_USER" "$CONTAINER_NAME" createdb "$DB_NAME"
 docker exec -t $CONTAINER_NAME createdb -U $DB_USER $DB_NAME
 
-# docker exec -i -u "$DB_USER" "$CONTAINER_NAME" psql "$DB_NAME" < "$fileName.sql"
 docker exec -i $CONTAINER_NAME psql -U $DB_USER "$DB_NAME" < "./backups/$fileName.sql"
 echo "Done"
