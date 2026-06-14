@@ -1,13 +1,23 @@
-from fastapi import FastAPI
-from fastapi.responses import HTMLResponse
+from fastapi import FastAPI, Request, status
+from fastapi.responses import HTMLResponse, JSONResponse
 from fastapi.openapi.utils import get_openapi
+from sqlalchemy.exc import OperationalError
 from src.routers import box_router, feedback_router
 from src.routers.auth_router import router as auth_router
-from src.db.database import init_db
+from src.db.database import init_db, check_db_connection
 from fastapi.middleware.cors import CORSMiddleware 
 from log import log
 
 app = FastAPI()
+
+
+@app.exception_handler(OperationalError)
+async def db_operational_error_handler(request: Request, exc: OperationalError):
+    log.exception(f"Ошибка PostgreSQL при {request.method} {request.url.path}: {exc}")
+    return JSONResponse(
+        status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+        content={"detail": "Database temporarily unavailable"},
+    )
 
 app.add_middleware(
     CORSMiddleware,
@@ -70,4 +80,9 @@ def root():
 @app.get("/health")
 def health():
     log.info("Health check запрос")
-    return {"status": "ok"}
+    if not check_db_connection():
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"status": "degraded", "database": "unavailable"},
+        )
+    return {"status": "ok", "database": "connected"}

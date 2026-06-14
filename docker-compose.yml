@@ -23,7 +23,7 @@ services:
     restart: on-failure
     container_name: apiCont
     ports:
-      - "8000"
+      - "8000:8000"
     depends_on:
       db:
         condition: service_healthy
@@ -34,6 +34,9 @@ services:
       - DB_HOST=${DB_HOST}
       - DB_PORT=${DB_PORT}
       - DATABASE_URL=postgresql://${DB_USER}:${DB_PASSWORD}@db:5432/${DB_NAME}
+      - LOG_DIR=/app/logs
+    volumes:
+      - ./logs/api:/app/logs
     healthcheck:
       test: ["CMD", "python", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8000/health')"]
       interval: 10s

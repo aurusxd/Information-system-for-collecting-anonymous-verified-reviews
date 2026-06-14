@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine
+from sqlalchemy import create_engine, text
 from sqlalchemy.orm import sessionmaker, declarative_base
 from log import log
 
@@ -22,7 +22,7 @@ if DATABASE_URL is None:
 if not DATABASE_URL.startswith("postgresql"):
     log.critical("DATABASE_URL must use PostgreSQL: postgresql://...")
 
-engine = create_engine(DATABASE_URL)
+engine = create_engine(DATABASE_URL, pool_pre_ping=True)
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 Base = declarative_base()
 
@@ -32,6 +32,16 @@ def get_db():
         yield db
     finally:
         db.close()
+
+
+def check_db_connection() -> bool:
+    try:
+        with engine.connect() as connection:
+            connection.execute(text("SELECT 1"))
+        return True
+    except Exception as e:
+        log.error(f"PostgreSQL недоступен: {e}")
+        return False
 
 
 def init_db():
