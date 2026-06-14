@@ -1,5 +1,4 @@
 #!/bin/bash
-export PATH="/c/Program Files/PostgreSQL/18/bin:$PATH"
 cd ..
 ENV_FILE=".env"
 if [ -f "$ENV_FILE" ]; then
